@@ -2,9 +2,6 @@
 
 >  使用`vue-cli`打包组件库，发布`npm`
 
-* `umd`,`common`规范打包
-* 单个组件单独打包，按需加载
-
 ## 创建项目
 
 ```shell
@@ -214,4 +211,95 @@ export default {
 ​	<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041433701.png" alt="image-20220404143310673" style="zoom: 67%;" />
 
 
+
+> 修改`package.json`
+
+* 通过`files`设置需要发布到`npm`的文件
+
+* 通过`main`设置入口文件，选择`common`
+
+```json
+"files": [
+    "packages",
+    "lib"
+  ],
+  "main": "lib/meoc-ui.common.js",
+```
+
+
+
+## 发布
+
+> 可以使用[bumpp](https://www.npmjs.com/package/bumpp)发布
+
+```shell
+yarn add  bumpp -D
+```
+
+在`package.json`中，添加发布的`release`,按实际需求更改
+
+```json
+"release": "bumpp --commit --push --tag && npm publish"
+```
+
+> 使用`yarn release`，就可以完成`version`自动修改与发布
+
+![image-20220404145822239](https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041458275.png)
+
+
+
+---
+
+## 测试
+
+> 新建一个`vue`项目
+
+### 完整导入
+
+> 导入发布的组件库
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+import MyUI from 'vue-cli-build-components'
+import 'vue-cli-build-components/lib/meoc-ui.css'
+
+Vue.use(MyUI)
+
+Vue.config.productionTip = false
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+App.vue
+
+```vue
+<template>
+  <div id="app">
+    <img alt="Vue logo" src="./assets/logo.png" />
+    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <LButton />
+    <LHeader />
+    <LCard />
+  </div>
+</template>
+
+<script>
+import HelloWorld from './components/HelloWorld.vue'
+
+export default {
+  name: 'App',
+  components: {
+    HelloWorld
+  }
+}
+</script>
+```
+
+> 测试成功
+
+![image-20220404151227527](https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041512612.png)
 
