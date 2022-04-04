@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "build:lib": "vue-cli-service build --target lib --name meoc-ui packages/index.js --dest lib"
+    "build:lib": "vue-cli-service build --target lib --name meoc-ui packages/index.js --dest lib",
+    "release": "bumpp --commit --push --tag && pnpm publish"
   },
   "files": [
     "packages",
@@ -24,6 +25,7 @@
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "@vue/eslint-config-standard": "^6.1.0",
+    "bumpp": "^7.1.1",
     "eslint": "^7.32.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
