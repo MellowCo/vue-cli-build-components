@@ -1,24 +1,217 @@
 # vue-cli-build-components
 
-## Project setup
-```
-yarn install
+>  使用`vue-cli`打包组件库，发布`npm`
+
+* `umd`,`common`规范打包
+* 单个组件单独打包，按需加载
+
+## 创建项目
+
+```shell
+vue create vue-cli-build-components
 ```
 
-### Compiles and hot-reloads for development
-```
-yarn serve
+
+
+---
+
+## 目录调整
+
+**参考element的目录结构，按实际情况调整**
+
+> 　将`src`目录更名为`examples`，用于测试组件。
+
+<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041229780.png" alt="image-20220404122932692" style="zoom: 67%;" />
+
+> 将`vue-cli`默认启动入口设置为`examples`,修改`vue.config.js`
+
+[配置参考 | Vue CLI (vuejs.org)](https://cli.vuejs.org/zh/config/#pages)
+
+```js
+module.exports = {
+  pages: {
+    index: {
+      // 
+      entry: 'examples/main.js',
+    },
+  }
+}
 ```
 
-### Compiles and minifies for production
-```
-yarn build
+
+
+---
+
+> 新建`packages`目录，存放自定义组件
+
+组件目录可按照如下
+
+![image-20220404130156738](https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041301757.png)
+
+* mian.vue，组件代码逻辑
+
+```vue
+<template>
+  <button class="l-button">这是一个按钮</button>
+</template>
+<script>
+export default {
+  name: 'LButton'
+}
+</script>
+
+<style lang="less" scoped>
+.l-button {
+  padding: 15px;
+  background-color: cadetblue;
+  color: #fff;
+}
+</style>
 ```
 
-### Lints and fixes files
-```
-yarn lint
+* index.js，用于导出组件
+
+```js
+import Button from './src/main'
+
+// 通过 vue.use(Button) 使用组件，按需导入
+Button.install = function (Vue) {
+  Vue.component(Button.name, Button);
+};
+
+export default Button
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+---
+
+## 统一导出
+
+> 在`packages`下创建`index.js`统一导出所有组件
+
+<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041412531.png" alt="image-20220404141253501" style="zoom:67%;" />
+
+> 使用 [require.context](https://webpack.js.org/guides/dependency-management/#requirecontext) 自动导出所有组件
+
+index.js
+
+```js
+const componentsContext = require.context('./', true, /\.js$/)
+const components = {}
+
+const formatContext = function () {
+  // components.keys() => ['./button/index.js', './card/index.js', './index.js']
+  componentsContext.keys().forEach(key => {
+    // 为当前目录 不处理
+    if (key === './index.js') { return }
+    // 获取导入的组件module
+    const component = componentsContext(key).default
+    const { name } = component
+    // components => { LButton: xxx, ... }
+    components[name] = component
+  })
+}
+
+const install = function (Vue) {
+  for (const name in components) {
+  // 将组件绑定到Vue上
+    Vue.component(name, components[name])
+  }
+}
+
+formatContext()
+
+export default {
+  install,
+  ...components
+}
+```
+
+
+
+---
+
+> 在`examples`下测试统一导出
+
+<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041412083.png" alt="image-20220404141236054" style="zoom:67%;" />
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+import MyUI from '../packages'
+
+Vue.use(MyUI)
+
+Vue.config.productionTip = false
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+
+
+App.vue
+
+```vue
+	<template>
+  <div id="app">
+    <LHeader />
+    <LButton />
+    <LCard />
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'App'
+}
+</script>
+
+<style lang="less">
+#app {
+  margin-top: 60px;
+  text-align: center;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  color: #2c3e50;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+</style>
+```
+
+> 通过`yarn serve`,启动服务，出现组件，说明导出成功
+
+<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041414194.png" alt="image-20220404141428136" style="zoom:50%;" />
+
+
+
+---
+
+## umd common打包
+
+> 生成`umd`和`common`可直接使用`vue-cli`的命令进行打包
+
+[构建目标 | Vue CLI (vuejs.org)](https://cli.vuejs.org/zh/guide/build-targets.html#应用)
+
+> 在`package.json`中，新建一条`scripts`
+
+```json
+"build:lib": "vue-cli-service build --target lib --name index packages/index.js --dest lib"
+```
+
+* `--target`: 打包模式
+* `--name`: 打包的js文件名称
+* `[entry]  packages/index.js `: 打包的文件入口
+* `--dest`: 打包的文件夹名称
+
+
+
+​	<img src="https://mellow-notebook-img.oss-cn-shanghai.aliyuncs.com/2022/202204041433701.png" alt="image-20220404143310673" style="zoom: 67%;" />
+
+
+

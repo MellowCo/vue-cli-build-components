@@ -1,12 +1,18 @@
 {
   "name": "vue-cli-build-components",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build:lib": "vue-cli-service build --target lib --name meoc-ui packages/index.js --dest lib"
   },
+  "files": [
+    "packages",
+    "lib"
+  ],
+  "main": "lib/meoc-ui.common.js",
   "dependencies": {
     "core-js": "^3.8.3",
     "vue": "^2.6.14"
